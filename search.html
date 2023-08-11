@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <meta charset="UTF-8">
+      <title>Movie Catalog</title>
+      <style>
+         body {
+         font-family: Arial, sans-serif;
+         margin: 0;
+         padding: 0;
+         display: flex;
+         flex-direction: column;
+         min-height: 100vh; 
+         }
+         header {
+         background-color: #333;
+         color: white;
+         text-align: center;
+         padding: 10px;
+         }
+         footer {
+         background-color: #333;
+         color: white;
+         text-align: center;
+         padding: 10px;
+         margin-top: auto;
+         }
+         .container {
+         max-width: 1200px;
+         margin: 0 auto;
+         padding: 20px;
+         }
+         .search-bar {
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         margin-bottom: 20px;
+         }
+         .search-input {
+         padding: 10px;
+         font-size: 16px;
+         width: 70%;
+         }
+         .search-button {
+         padding: 10px 20px;
+         font-size: 16px;
+         background-color: #333;
+         color: white;
+         border: none;
+         cursor: pointer;
+         }
+         .movie-list {
+         display: flex;
+         flex-wrap: wrap;
+         justify-content: center;
+         gap: 20px;
+         }
+         .movie-item {
+         width: 200px;
+         height: 50px;
+         }
+         .movie-item img {
+         width: 100%;
+         cursor: pointer;
+         }
+         .error-message {
+         color: red;
+         }
+      </style>
+   </head>
+   <body>
+      <header>
+         <h1>Welcome to Movie Catalog</h1>
+      </header>
+      <div class="container">
+         <div class="search-bar">
+            <input type="text" class="search-input" id="searchQuery" placeholder="Search for a movie">
+            <button onclick="searchMovies()" class="search-button">Search</button>
+         </div>
+         <div class="search-results" id="searchResults"></div>
+         <div class="error-message" id="errorMessage"></div>
+         <br>
+         <div class="movie-list" id="movieList"></div>
+      </div>
+      <footer>
+         <p>&copy; 2023 Movie Catalog</p>
+      </footer>
+      <script>
+         function searchMovies() {
+           var searchQuery = document.getElementById('searchQuery').value.trim();
+           var errorMessageContainer = document.getElementById('errorMessage');
+           var searchResultsContainer = document.getElementById('searchResults');
+           var movieListContainer = document.getElementById('movieList'); 
+         
+           if (searchQuery === '') {
+             errorMessageContainer.textContent = "Please enter a movie name";
+             searchResultsContainer.textContent = '';
+             movieListContainer.innerHTML = ''; 
+             return;
+           }
+         
+           var url = "https://www.omdbapi.com/?apikey=f4854a56&s=" + searchQuery;
+         
+           fetch(url)
+             .then(response => {
+               if (response.status !== 200) {
+                 errorMessageContainer.textContent = 'Something went wrong ' + response.status;
+                 searchResultsContainer.textContent = ''; 
+                 return;
+               }
+         
+               response.json().then(function(data) {
+                 errorMessageContainer.textContent = '';
+                 searchQuery.value = '';
+                 
+         
+                 if (data.Search) {
+                   var movies = data.Search.slice(0, 3);
+                   searchResultsContainer.textContent = `Here are the results for query: ${searchQuery}`; 
+                   displayMovies(movies);
+                 } else {
+                   movieListContainer.innerHTML = '';
+                   searchResultsContainer.textContent = '';
+                   errorMessageContainer.textContent = "No data found."; 
+                 }
+               });
+             })
+             .catch(err => 
+                    errorMessageContainer.textContent = 'Fetch Error :-S ' + err);
+               
+         }
+         
+         function displayMovies(movies) {
+           var movieListContainer = document.getElementById('movieList');
+           movieListContainer.innerHTML = '';
+         
+           movies.forEach(movie => {
+             var movieItem = document.createElement('div');
+             movieItem.className = 'movie-item';
+         
+             var moviePoster = document.createElement('img');
+             moviePoster.src = movie.Poster;
+             moviePoster.alt = movie.Title;
+             moviePoster.addEventListener('click', () => {
+               window.open(`https://www.imdb.com/title/${movie.imdbID}`, '_blank');
+             });
+         
+             movieItem.appendChild(moviePoster);
+             movieListContainer.appendChild(movieItem);
+           });
+           searchQuery.value = '';
+         }
+      </script>
+   </body>
+</html>
